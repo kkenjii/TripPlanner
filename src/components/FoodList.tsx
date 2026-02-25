@@ -30,7 +30,8 @@ export default function FoodList({ city, country }: { city: string; country: str
   const [error, setError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
   const [gpsReady, setGpsReady] = useState(false);
-  const [distances, setDistances] = useState<Record<string, number>>({});
+  const [distances, setDistances] = useState<Record<string, string>>({});
+  const [distanceKmById, setDistanceKmById] = useState<Record<string, number>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'default' | 'closest' | 'farthest' | 'rating' | 'price-low' | 'price-high'>('default');
   const [searchQuery, setSearchQuery] = useState('');
@@ -106,18 +107,22 @@ export default function FoodList({ city, country }: { city: string; country: str
   useEffect(() => {
     if (!userLocation) {
       setDistances({});
+      setDistanceKmById({});
       return;
     }
 
-    const newDistances: Record<string, number> = {};
+    const newDistances: Record<string, string> = {};
+    const newDistanceKmById: Record<string, number> = {};
     food.forEach((place) => {
       if (place.lat === 0 || place.lng === 0) return;
       
       const itemCoords: Coordinates = { lat: place.lat, lng: place.lng };
       const km = calculateDistance(userLocation, itemCoords);
-      newDistances[place.id] = km;
+      newDistances[place.id] = formatDistance(km);
+      newDistanceKmById[place.id] = km;
     });
     setDistances(newDistances);
+    setDistanceKmById(newDistanceKmById);
   }, [userLocation, food]);
 
   // Sort food places
@@ -126,9 +131,9 @@ export default function FoodList({ city, country }: { city: string; country: str
 
     switch (sortBy) {
       case 'closest':
-        return foodCopy.sort((a, b) => (distances[a.id] || Infinity) - (distances[b.id] || Infinity));
+        return foodCopy.sort((a, b) => (distanceKmById[a.id] || Infinity) - (distanceKmById[b.id] || Infinity));
       case 'farthest':
-        return foodCopy.sort((a, b) => (distances[b.id] || 0) - (distances[a.id] || 0));
+        return foodCopy.sort((a, b) => (distanceKmById[b.id] || 0) - (distanceKmById[a.id] || 0));
       case 'rating':
         return foodCopy.sort((a, b) => b.rating - a.rating);
       case 'price-low':
@@ -337,7 +342,7 @@ export default function FoodList({ city, country }: { city: string; country: str
                 })()}
                 {distances[place.id] !== undefined && userLocation && (
                   <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-semibold flex items-center gap-1">
-                    🧭 {formatDistance(distances[place.id])}
+                    🧭 {distances[place.id]}
                   </span>
                 )}
               </div>
