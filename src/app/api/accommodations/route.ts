@@ -15,7 +15,11 @@ export async function GET(req: NextRequest) {
   const userLat = lat ? parseFloat(lat) : undefined;
   const userLng = lng ? parseFloat(lng) : undefined;
 
-  const cacheKey = `accommodations_v1_${country}_${city}${userLat ? `_${userLat}_${userLng}` : ''}`;
+  // Round coordinates to 4 decimals for consistent caching (~11m precision)
+  const roundedLat = userLat ? userLat.toFixed(4) : undefined;
+  const roundedLng = userLng ? userLng.toFixed(4) : undefined;
+  
+  const cacheKey = `accommodations_v2_${country}_${city}${roundedLat ? `_${roundedLat}_${roundedLng}` : '_no_gps'}`;
   const cached = getCached(cacheKey);
 
   if (cached) {

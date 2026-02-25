@@ -45,11 +45,13 @@ export default function AccommodationList({ city, country }: { city: string; cou
       return;
     }
 
-    const cacheKey = `accommodations_${country}_${city}`;
+    // Include user location in cache key to avoid serving city-center results when GPS is available
+    const locationKey = userLocation ? `${userLocation.lat.toFixed(4)}_${userLocation.lng.toFixed(4)}` : 'no_gps';
+    const cacheKey = `accommodations_${country}_${city}_${locationKey}`;
     const cachedAccommodations = getCachedData(cacheKey);
 
     if (cachedAccommodations) {
-      console.log(`[AccommodationList] Loading cached accommodations for ${country} - ${city}`);
+      console.log(`[AccommodationList] Loading cached accommodations for ${country} - ${city} (${locationKey})`);
       setAccommodations(cachedAccommodations);
       setLoading(false);
       return;
@@ -311,12 +313,16 @@ export default function AccommodationList({ city, country }: { city: string; cou
                 {/* View Details and Reviews Buttons */}
                 <div className="grid grid-cols-2 gap-2 mt-3">
                   <a
-                    href={acc.url || '#'}
+                    href={
+                      userLocation
+                        ? `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${acc.lat},${acc.lng}`
+                        : `https://www.google.com/maps/search/?api=1&query=${acc.lat},${acc.lng}`
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-center text-sm font-semibold rounded transition-colors"
                   >
-                    View Details
+                    {userLocation ? '🧭 Directions' : '📍 View Map'}
                   </a>
                   <button
                     onClick={() => setExpandedReviews(expandedReviews === acc.id ? null : acc.id)}

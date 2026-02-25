@@ -45,11 +45,13 @@ export default function FoodList({ city, country }: { city: string; country: str
       return;
     }
 
-    const cacheKey = `food_${country}_${city}`;
+    // Include user location in cache key to avoid serving city-center results when GPS is available
+    const locationKey = userLocation ? `${userLocation.lat.toFixed(4)}_${userLocation.lng.toFixed(4)}` : 'no_gps';
+    const cacheKey = `food_${country}_${city}_${locationKey}`;
     const cachedFood = getCachedData(cacheKey);
     
     if (cachedFood) {
-      console.log(`[FoodList] Loading cached food for ${country} - ${city}`);
+      console.log(`[FoodList] Loading cached food for ${country} - ${city} (${locationKey})`);
       setFood(cachedFood);
       setLoading(false);
       return;

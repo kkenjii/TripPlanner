@@ -63,11 +63,13 @@ export default function TrendingList({ city, country }: TrendingListProps) {
       return;
     }
 
-    const cacheKey = `trending_${country}_${city}`;
+    // Include user location in cache key to avoid serving city-center results when GPS is available
+    const locationKey = userLocation ? `${userLocation.lat.toFixed(4)}_${userLocation.lng.toFixed(4)}` : 'no_gps';
+    const cacheKey = `trending_${country}_${city}_${locationKey}`;
     const cachedItems = getCachedData(cacheKey);
     
     if (cachedItems) {
-      console.log(`[TrendingList] Loading cached trending for ${country} - ${city}`);
+      console.log(`[TrendingList] Loading cached trending for ${country} - ${city} (${locationKey})`);
       setItems(cachedItems);
       setLoading(false);
       return;
