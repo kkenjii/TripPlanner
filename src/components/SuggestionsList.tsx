@@ -31,7 +31,6 @@ export default function SuggestionsList({ city, country }: { city: string; count
     const cachedSuggestions = getCachedData(cacheKey);
     
     if (cachedSuggestions) {
-      console.log(`[SuggestionsList] Loading cached suggestions for ${country} - ${city}`);
       setSuggestions(cachedSuggestions);
       setLoading(false);
       return;

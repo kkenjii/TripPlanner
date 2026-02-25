@@ -52,7 +52,6 @@ export default function GuideSection({ city, country }: { city: string; country:
     const cacheKey = `${country}__${city}`;
     const cachedStories = getCachedData(cacheKey);
     if (cachedStories) {
-      console.log(`[GuideSection] Loading cached stories for ${country} - ${city}`);
       setStories(cachedStories);
       setSuccessfulResponse(true);
       setLoading(false);
@@ -95,7 +94,6 @@ export default function GuideSection({ city, country }: { city: string; country:
           const stories = data.stories || [];
           
           if (stories.length > 0) {
-            console.log(`[GuideSection] Got ${stories.length} stories from ${subreddit}`);
             // Add new stories to existing ones
             allStories.push(...stories);
             // Update state immediately with accumulated stories
