@@ -49,6 +49,7 @@ export default function TrendingList({ city, country }: TrendingListProps) {
   const [expandedReviews, setExpandedReviews] = useState<Set<string>>(new Set());
   const [reviewSortOrder, setReviewSortOrder] = useState<Record<string, 'rating-desc' | 'rating-asc' | 'date-new'>>({});
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
+  const [gpsReady, setGpsReady] = useState(false);
   const [distances, setDistances] = useState<Record<string, string>>({});
   const [distanceKmById, setDistanceKmById] = useState<Record<string, number>>({});
   const [gpsError, setGpsError] = useState('');
@@ -65,13 +66,18 @@ export default function TrendingList({ city, country }: TrendingListProps) {
       return;
     }
 
+    // Wait for GPS to resolve before fetching
+    if (!gpsReady) {
+      return;
+    }
+
     // Include user location in cache key to avoid serving city-center results when GPS is available
     const locationKey = userLocation ? `${userLocation.lat.toFixed(4)}_${userLocation.lng.toFixed(4)}` : 'no_gps';
     const cacheKey = `trending_${country}_${city}_${locationKey}`;
     const cachedItems = getCachedData(cacheKey);
     
     if (cachedItems) {
-      console.log(`[TrendingList] Loading cached trending for ${country} - ${city} (${locationKey})`);
+
       setItems(cachedItems);
       setLoading(false);
       return;
@@ -103,7 +109,7 @@ export default function TrendingList({ city, country }: TrendingListProps) {
     };
 
     fetchTrending();
-  }, [city, country, userLocation, getCachedData, setCachedData]);
+  }, [city, country, userLocation, gpsReady, getCachedData, setCachedData]);
 
   useEffect(() => {
     setVisiblePerCategoryLimit(INITIAL_VISIBLE_PER_CATEGORY);
@@ -120,10 +126,12 @@ export default function TrendingList({ city, country }: TrendingListProps) {
       .then(coords => {
         setUserLocation(coords);
         setGpsError('');
+        setGpsReady(true);
       })
       .catch(err => {
-        console.log('GPS not available:', err.message);
         setGpsError('Enable location access to sort by distance (Closest/Farthest).');
+        setUserLocation(null);
+        setGpsReady(true);
       });
   }, []);
 

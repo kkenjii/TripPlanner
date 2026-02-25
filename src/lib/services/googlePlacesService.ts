@@ -51,6 +51,11 @@ export async function searchFoodPlaces(
   const searchLat = userLat !== undefined ? userLat : center?.lat;
   const searchLng = userLng !== undefined ? userLng : center?.lng;
 
+  console.log(`[Google Places] searchFoodPlaces: ${city}, ${country}`);
+  console.log(`[Google Places] User GPS: ${userLat !== undefined ? `${userLat},${userLng}` : 'NOT PROVIDED'}`);
+  console.log(`[Google Places] City center: ${center?.lat},${center?.lng}`);
+  console.log(`[Google Places] Using coordinates: ${searchLat},${searchLng} ${userLat !== undefined ? '(USER GPS)' : '(CITY CENTER)'}`);
+
   const params: Record<string, string | number> = {
     query: `top rated restaurants in ${city}, ${country}`,
     key: API_KEY,
@@ -62,6 +67,7 @@ export async function searchFoodPlaces(
   if (searchLat !== undefined && searchLng !== undefined) {
     params.location = `${searchLat},${searchLng}`;
     params.radius = 25000;
+    console.log(`[Google Places] Search params:`, params);
   }
 
   const results: any[] = [];

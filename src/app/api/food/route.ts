@@ -15,15 +15,22 @@ export async function GET(req: NextRequest) {
   const userLat = lat ? parseFloat(lat) : undefined;
   const userLng = lng ? parseFloat(lng) : undefined;
 
+  console.log(`[Food API] Request: ${country}/${city}, GPS: ${userLat ? `${userLat},${userLng}` : 'NO GPS'}`);
+
   // Round coordinates to 4 decimals for consistent caching (~11m precision)
   const roundedLat = userLat ? userLat.toFixed(4) : undefined;
   const roundedLng = userLng ? userLng.toFixed(4) : undefined;
 
-  const cacheKey = `food_v6_${country}_${city}${roundedLat ? `_${roundedLat}_${roundedLng}` : '_no_gps'}`;
+  const cacheKey = `food_v7_${country}_${city}${roundedLat ? `_${roundedLat}_${roundedLng}` : '_no_gps'}`;
+  console.log(`[Food API] Cache key: ${cacheKey}`);
+  
   const cached = getCached(cacheKey);
   if (cached) {
+    console.log(`[Food API] ✓ Returning cached data (${cached.length} items)`);
     return NextResponse.json({ food: cached });
   }
+  
+  console.log(`[Food API] ⚠ Cache miss, fetching from Google Places...`);
   try {
     const places = await searchFoodPlaces(city, country, 50, userLat, userLng);
     const detailedRaw = await Promise.all(

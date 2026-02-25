@@ -17,6 +17,7 @@ export default function AccommodationList({ city, country }: { city: string; cou
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
+  const [gpsReady, setGpsReady] = useState(false);
   const [distances, setDistances] = useState<Record<string, number>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'closest' | 'rating' | 'reviews' | 'with-reviews'>('closest');
@@ -30,10 +31,13 @@ export default function AccommodationList({ city, country }: { city: string; cou
   // Get user's GPS location on component mount
   useEffect(() => {
     getUserLocation()
-      .then(coords => setUserLocation(coords))
+      .then(coords => {
+        setUserLocation(coords);
+        setGpsReady(true);
+      })
       .catch((err: any) => {
-        console.log('GPS not available:', err);
         setUserLocation(null);
+        setGpsReady(true);
       });
   }, []);
 
@@ -45,13 +49,18 @@ export default function AccommodationList({ city, country }: { city: string; cou
       return;
     }
 
+    // Wait for GPS to resolve before fetching
+    if (!gpsReady) {
+      return;
+    }
+
     // Include user location in cache key to avoid serving city-center results when GPS is available
     const locationKey = userLocation ? `${userLocation.lat.toFixed(4)}_${userLocation.lng.toFixed(4)}` : 'no_gps';
     const cacheKey = `accommodations_${country}_${city}_${locationKey}`;
     const cachedAccommodations = getCachedData(cacheKey);
 
     if (cachedAccommodations) {
-      console.log(`[AccommodationList] Loading cached accommodations for ${country} - ${city} (${locationKey})`);
+
       setAccommodations(cachedAccommodations);
       setLoading(false);
       return;
@@ -82,7 +91,7 @@ export default function AccommodationList({ city, country }: { city: string; cou
         setError('Failed to load accommodations');
         setLoading(false);
       });
-  }, [city, country, userLocation, getCachedData, setCachedData]);
+  }, [city, country, userLocation, gpsReady, getCachedData, setCachedData]);
 
   // Calculate distances from user
   useEffect(() => {

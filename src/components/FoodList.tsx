@@ -29,6 +29,7 @@ export default function FoodList({ city, country }: { city: string; country: str
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
+  const [gpsReady, setGpsReady] = useState(false);
   const [distances, setDistances] = useState<Record<string, number>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'default' | 'closest' | 'farthest' | 'rating' | 'price-low' | 'price-high'>('default');
@@ -45,13 +46,18 @@ export default function FoodList({ city, country }: { city: string; country: str
       return;
     }
 
+    // Wait for GPS to resolve before fetching
+    if (!gpsReady) {
+      return;
+    }
+
     // Include user location in cache key to avoid serving city-center results when GPS is available
     const locationKey = userLocation ? `${userLocation.lat.toFixed(4)}_${userLocation.lng.toFixed(4)}` : 'no_gps';
-    const cacheKey = `food_${country}_${city}_${locationKey}`;
+    const cacheKey = `food_v7_${country}_${city}_${locationKey}`;
+    
     const cachedFood = getCachedData(cacheKey);
     
     if (cachedFood) {
-      console.log(`[FoodList] Loading cached food for ${country} - ${city} (${locationKey})`);
       setFood(cachedFood);
       setLoading(false);
       return;
@@ -81,21 +87,32 @@ export default function FoodList({ city, country }: { city: string; country: str
         setError('Failed to load food places');
         setLoading(false);
       });
-  }, [city, country, userLocation, getCachedData, setCachedData]);
+  }, [city, country, userLocation, gpsReady, getCachedData, setCachedData]);
 
-  // Get user's GPS location on component mount
+  // Get user's GPS location BEFORE fetching data
   useEffect(() => {
     getUserLocation()
-      .then(coords => setUserLocation(coords))
-      .catch(err => console.log('GPS not available:', err.message));
+      .then(coords => {
+        setUserLocation(coords);
+        setGpsReady(true);
+      })
+      .catch(err => {
+        setUserLocation(null);
+        setGpsReady(true); // Mark as ready even if GPS failed
+      });
   }, []);
 
   // Calculate distances when location or food items change
   useEffect(() => {
-    if (!userLocation) return;
+    if (!userLocation) {
+      setDistances({});
+      return;
+    }
 
     const newDistances: Record<string, number> = {};
-    food.forEach(place => {
+    food.forEach((place) => {
+      if (place.lat === 0 || place.lng === 0) return;
+      
       const itemCoords: Coordinates = { lat: place.lat, lng: place.lng };
       const km = calculateDistance(userLocation, itemCoords);
       newDistances[place.id] = km;
@@ -318,9 +335,9 @@ export default function FoodList({ city, country }: { city: string; country: str
                     </span>
                   );
                 })()}
-                {distances[place.id] !== undefined && (
-                  <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full font-semibold">
-                    📍 {formatDistance(distances[place.id])}
+                {distances[place.id] !== undefined && userLocation && (
+                  <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-semibold flex items-center gap-1">
+                    🧭 {formatDistance(distances[place.id])}
                   </span>
                 )}
               </div>
