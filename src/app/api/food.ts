@@ -6,13 +6,14 @@ import { mapGooglePlaceToFood } from '../../lib/mappers/foodMapper';
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const city = searchParams.get('city') || 'Tokyo';
-  const cacheKey = `food_${city}`;
+  const country = searchParams.get('country') || 'Japan';
+  const cacheKey = `food_${city}_${country}`;
   const cached = getCached(cacheKey);
   if (cached) {
     return NextResponse.json({ food: cached });
   }
   try {
-    const places = await searchFoodPlaces(city);
+    const places = await searchFoodPlaces(city, country);
     const detailed = await Promise.all(
       places.slice(0, 5).map(async (place: any) => {
         const details = await getPlaceDetails(place.place_id);
