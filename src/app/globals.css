@@ -3,6 +3,28 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --bg-page: #ffffff;
+  --bg-card: #ffffff;
+  --bg-inner: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+}
+
+:root[data-theme='light'] {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+:root[data-theme='dark'] {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --bg-page: #0f172a;
+  --bg-card: #1e293b;
+  --bg-inner: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
 }
 
 @theme inline {
@@ -23,4 +45,177 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.app-page {
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+.app-header {
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.app-tabs {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.app-tab-btn {
+  border-radius: 10px;
+}
+
+.app-theme-toggle,
+.app-select,
+.app-input {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.app-card {
+  box-shadow: 0 6px 22px rgba(15, 23, 42, 0.08);
+  border: 1px solid #334155;
+}
+
+.app-inner {
+  background: var(--bg-inner);
+  color: var(--text-primary);
+}
+
+.app-text-primary {
+  color: var(--text-primary);
+}
+
+.app-text-secondary {
+  color: var(--text-secondary);
+}
+
+.app-text-muted {
+  color: var(--text-muted);
+}
+
+.app-btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.app-btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.app-btn-secondary {
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+.app-btn-secondary:hover {
+  background: #6d28d9;
+}
+
+.app-btn-neutral {
+  background: #334155;
+  color: var(--text-primary);
+}
+
+:root[data-theme='light'] .app-header,
+:root[data-theme='light'] .app-tabs,
+:root[data-theme='light'] .app-card,
+:root[data-theme='light'] .app-select,
+:root[data-theme='light'] .app-input {
+  background: #ffffff;
+  color: #111827;
+}
+
+:root[data-theme='light'] .app-tab-btn {
+  color: #4b5563;
+}
+
+:root[data-theme='light'] .app-tab-btn:hover {
+  background: #f3f4f6;
+}
+
+:root[data-theme='light'] .app-tab-active {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fdba74;
+}
+
+:root[data-theme='dark'] .app-header,
+:root[data-theme='dark'] .app-tabs,
+:root[data-theme='dark'] .app-card,
+:root[data-theme='dark'] .app-select,
+:root[data-theme='dark'] .app-input {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: #334155;
+}
+
+:root[data-theme='dark'] .app-card {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme='dark'] .text-gray-900,
+:root[data-theme='dark'] .text-gray-800,
+:root[data-theme='dark'] .text-gray-700,
+:root[data-theme='dark'] .text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+:root[data-theme='dark'] .text-gray-500,
+:root[data-theme='dark'] .text-gray-400 {
+  color: var(--text-muted) !important;
+}
+
+:root[data-theme='dark'] .bg-gray-50,
+:root[data-theme='dark'] .bg-gray-100,
+:root[data-theme='dark'] .bg-gray-200,
+:root[data-theme='dark'] .bg-white,
+:root[data-theme='dark'] .bg-white\/60 {
+  background: var(--bg-inner) !important;
+}
+
+:root[data-theme='dark'] .border-gray-200,
+:root[data-theme='dark'] .border-gray-300,
+:root[data-theme='dark'] .border-green-100,
+:root[data-theme='dark'] .border-red-200,
+:root[data-theme='dark'] .border-green-300 {
+  border-color: #334155 !important;
+}
+
+:root[data-theme='dark'] .app-tab-btn {
+  color: #cbd5e1;
+}
+
+:root[data-theme='dark'] .app-tab-btn:hover {
+  background: #1f2937;
+}
+
+:root[data-theme='dark'] .app-tab-active {
+  background: #1f2937;
+  color: #fb923c;
+  border: 1px solid #fb923c;
+}
+
+/* Loading animation */
+@keyframes jiggly-loading {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  25% {
+    opacity: 0.8;
+    transform: scale(1.05) translateY(-2px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  75% {
+    opacity: 0.8;
+    transform: scale(1.05) translateY(2px);
+  }
+}
+
+.loading-jiggly {
+  animation: jiggly-loading 1.2s ease-in-out infinite;
+  display: inline-block;
 }
