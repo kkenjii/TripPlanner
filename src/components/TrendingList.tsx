@@ -78,7 +78,14 @@ export default function TrendingList({ city, country }: TrendingListProps) {
       setLoading(true);
       setError('');
       try {
-        const response = await fetch(`/api/trending?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&limitPerCategory=${FETCH_MAX_PER_CATEGORY}`);
+        const queryParams = new URLSearchParams({
+          city: city,
+          country: country,
+          limitPerCategory: FETCH_MAX_PER_CATEGORY.toString(),
+          ...(userLocation && { lat: userLocation.lat.toString(), lng: userLocation.lng.toString() }),
+        });
+
+        const response = await fetch(`/api/trending?${queryParams}`);
         if (!response.ok) throw new Error('Failed to fetch trending data');
         const data = await response.json();
         setCachedData(cacheKey, data);
@@ -92,7 +99,7 @@ export default function TrendingList({ city, country }: TrendingListProps) {
     };
 
     fetchTrending();
-  }, [city, country, getCachedData, setCachedData]);
+  }, [city, country, userLocation, getCachedData, setCachedData]);
 
   useEffect(() => {
     setVisiblePerCategoryLimit(INITIAL_VISIBLE_PER_CATEGORY);

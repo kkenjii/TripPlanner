@@ -9,13 +9,19 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const city = searchParams.get('city') || 'Tokyo';
   const country = searchParams.get('country') || 'Japan';
-  const cacheKey = `food_v5_${country}_${city}`;
+  const lat = searchParams.get('lat');
+  const lng = searchParams.get('lng');
+
+  const userLat = lat ? parseFloat(lat) : undefined;
+  const userLng = lng ? parseFloat(lng) : undefined;
+
+  const cacheKey = `food_v5_${country}_${city}${userLat ? `_${userLat}_${userLng}` : ''}`;
   const cached = getCached(cacheKey);
   if (cached) {
     return NextResponse.json({ food: cached });
   }
   try {
-    const places = await searchFoodPlaces(city, country, 50);
+    const places = await searchFoodPlaces(city, country, 50, userLat, userLng);
     const detailedRaw = await Promise.all(
       places.slice(0, 50).map(async (place: any) => {
         const details = await getPlaceDetails(place.place_id);

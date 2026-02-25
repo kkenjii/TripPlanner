@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-const countries = ['Japan', 'Hong Kong', 'Thailand', 'Malaysia'];
+const countries = ['Japan', 'Hong Kong', 'Thailand', 'Malaysia', 'Philippines'];
 
 export default function CountryFilter({ selected, onChange }: { selected: string; onChange: (country: string) => void }) {
   return (

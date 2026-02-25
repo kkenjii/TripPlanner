@@ -6,6 +6,11 @@ export async function GET(request: NextRequest) {
   const country = request.nextUrl.searchParams.get('country') || 'Japan';
   const limitParam = Number(request.nextUrl.searchParams.get('limitPerCategory') || '30');
   const limitPerCategory = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 30) : 30;
+  const lat = request.nextUrl.searchParams.get('lat');
+  const lng = request.nextUrl.searchParams.get('lng');
+
+  const userLat = lat ? parseFloat(lat) : undefined;
+  const userLng = lng ? parseFloat(lng) : undefined;
 
   if (!city) {
     return NextResponse.json(
@@ -15,7 +20,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const trendingItems = await fetchTrendingData(city, country, limitPerCategory);
+    const trendingItems = await fetchTrendingData(city, country, limitPerCategory, userLat, userLng);
     return NextResponse.json(trendingItems);
   } catch (error) {
     console.error('Error in /api/trending:', error);

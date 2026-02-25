@@ -240,7 +240,13 @@ async function fetchPlaceDetails(placeId: string): Promise<GooglePlace | null> {
   return null;
 }
 
-export async function fetchTrendingData(city: string, country: string, perCategoryLimit: number = 30): Promise<TrendingItem[]> {
+export async function fetchTrendingData(
+  city: string,
+  country: string,
+  perCategoryLimit: number = 30,
+  userLat?: number,
+  userLng?: number
+): Promise<TrendingItem[]> {
   try {
     const results: TrendingItem[] = [];
     const safeLimit = Math.min(Math.max(perCategoryLimit, 1), 30);
@@ -249,13 +255,21 @@ export async function fetchTrendingData(city: string, country: string, perCatego
     // Fetch from Google Places
     for (const keyword of trendingKeywords) {
       try {
+        const params: any = {
+          query: `${keyword} in ${city}, ${country}`,
+          key: GOOGLE_PLACES_API_KEY,
+        };
+
+        // Prioritize user location if available
+        if (userLat !== undefined && userLng !== undefined) {
+          params.location = `${userLat},${userLng}`;
+          params.radius = 25000;
+        }
+
         const response = await axios.get(
           'https://maps.googleapis.com/maps/api/place/textsearch/json',
           {
-            params: {
-              query: `${keyword} in ${city}, ${country}`,
-              key: GOOGLE_PLACES_API_KEY,
-            },
+            params,
             timeout: 5000,
           }
         );

@@ -60,7 +60,14 @@ export default function FoodList({ city, country }: { city: string; country: str
     setError(null);
     setCurrentPage(1);
     setVisibleLimit(INITIAL_VISIBLE);
-    fetch(`/api/food?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}`)
+
+    const queryParams = new URLSearchParams({
+      city: city,
+      country: country,
+      ...(userLocation && { lat: userLocation.lat.toString(), lng: userLocation.lng.toString() }),
+    });
+
+    fetch(`/api/food?${queryParams}`)
       .then(res => res.json())
       .then(data => {
         const foodData = data.food || [];
@@ -72,7 +79,7 @@ export default function FoodList({ city, country }: { city: string; country: str
         setError('Failed to load food places');
         setLoading(false);
       });
-  }, [city, country, getCachedData, setCachedData]);
+  }, [city, country, userLocation, getCachedData, setCachedData]);
 
   // Get user's GPS location on component mount
   useEffect(() => {

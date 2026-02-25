@@ -290,6 +290,7 @@ function isStoryCandidate(title: string, over18: boolean, subreddit: string, cou
     'Hong Kong': ['hong kong', 'hk'],
     Thailand: ['thailand', 'bangkok', 'phuket', 'chiang mai', 'pattaya', 'krabi'],
     Malaysia: ['malaysia', 'kuala lumpur', 'kl', 'penang', 'johor bahru', 'malacca'],
+    Philippines: ['philippines', 'manila', 'cebu', 'boracay', 'palawan', 'davao', 'ph'],
   };
   
   // Generic subreddit list
@@ -321,6 +322,7 @@ export async function fetchTravelStories(country: string, city: string): Promise
     'Hong Kong': ['HongKong', 'solotravel', 'travelhacks', 'travel'],
     Thailand: ['Thailand', 'ThailandTourism', 'solotravel', 'travelhacks', 'travel'],
     Malaysia: ['Malaysia', 'MalaysiaTravel', 'solotravel', 'travelhacks', 'travel'],
+    Philippines: ['PHTravel', 'Philippines', 'solotravel', 'travelhacks', 'travel'],
   };
   const subreddits = subredditsByCountry[country] || ['travel', 'solotravel', 'travelhacks'];
   const stories: TravelStory[] = [];

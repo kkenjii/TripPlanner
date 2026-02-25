@@ -6,6 +6,7 @@ const tabs = [
   { key: 'trending', label: '🔥 Trending' },
   { key: 'food', label: '🍜 Food' },
   { key: 'guide', label: '💬 Tips' },
+  { key: 'accommodation', label: '🏨 Accommodation' },
 ];
 
 export default function TabNavigation({ selected, onSelect }: { selected: string; onSelect: (key: string) => void }) {

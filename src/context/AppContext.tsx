@@ -7,8 +7,9 @@ const citiesByCountry: Record<string, string[]> = {
   'Hong Kong': ['Central', 'Tsim Sha Tsui', 'Mong Kok', 'Causeway Bay', 'Lantau Island'],
   Thailand: ['Bangkok', 'Phuket', 'Chiang Mai', 'Pattaya', 'Krabi'],
   Malaysia: ['Kuala Lumpur', 'Penang', 'Johor Bahru', 'Malacca', 'Kota Kinabalu'],
+  Philippines: ['Manila', 'Cebu', 'Boracay', 'Palawan', 'Davao'],
 };
-const tabs = ['trending', 'food', 'guide'];
+const tabs = ['trending', 'food', 'guide', 'accommodation'];
 
 interface AppContextType {
   country: string;

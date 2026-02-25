@@ -19,6 +19,11 @@ const CITY_CENTER_BY_NAME: Record<string, { lat: number; lng: number }> = {
   'Johor Bahru': { lat: 1.4854, lng: 103.7618 },
   Malacca: { lat: 2.1896, lng: 102.2501 },
   'Kota Kinabalu': { lat: 5.9788, lng: 118.0753 },
+  Manila: { lat: 14.5995, lng: 120.9842 },
+  Cebu: { lat: 10.3157, lng: 123.8854 },
+  Boracay: { lat: 11.9674, lng: 121.9248 },
+  Palawan: { lat: 9.8349, lng: 118.7384 },
+  Davao: { lat: 7.1907, lng: 125.4553 },
 };
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -28,12 +33,23 @@ const REGION_BY_COUNTRY: Record<string, string> = {
   'Hong Kong': 'hk',
   Thailand: 'th',
   Malaysia: 'my',
+  Philippines: 'ph',
 };
 
-export async function searchFoodPlaces(city: string, country: string, maxResults: number = 50) {
+export async function searchFoodPlaces(
+  city: string,
+  country: string,
+  maxResults: number = 50,
+  userLat?: number,
+  userLng?: number
+) {
   if (!API_KEY) throw new Error('Missing Google Places API key');
   const center = CITY_CENTER_BY_NAME[city];
   const region = REGION_BY_COUNTRY[country] || 'jp';
+
+  // Prioritize user location over city center
+  const searchLat = userLat !== undefined ? userLat : center?.lat;
+  const searchLng = userLng !== undefined ? userLng : center?.lng;
 
   const params: Record<string, string | number> = {
     query: `top rated restaurants in ${city}, ${country}`,
@@ -43,8 +59,8 @@ export async function searchFoodPlaces(city: string, country: string, maxResults
     language: 'en',
   };
 
-  if (center) {
-    params.location = `${center.lat},${center.lng}`;
+  if (searchLat !== undefined && searchLng !== undefined) {
+    params.location = `${searchLat},${searchLng}`;
     params.radius = 25000;
   }
 
