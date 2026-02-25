@@ -1,4 +1,5 @@
-import { FoodPlace, Review } from '../../components/FoodList';
+import { FoodPlace } from '../../components/FoodList';
+import { Review } from './eventMapper';
 
 export function mapGooglePlaceToFood(place: any, apiKey: string = ''): FoodPlace {
   const photos = (place.photos || []).slice(0, 4).map((photo: any) => {

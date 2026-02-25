@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCached, setCached } from '../../lib/services/cacheService';
 import { fetchDoorkeeperEvents } from '../../lib/services/doorkeeperService';
-import { mapDoorkeeperEvent } from '../../lib/mappers/eventMapper';
+import { mapDoorkeeperEvent, Event } from '../../lib/mappers/eventMapper';
 import { searchFoodPlaces, getPlaceDetails } from '../../lib/services/googlePlacesService';
 import { mapGooglePlaceToFood } from '../../lib/mappers/foodMapper';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const city = searchParams.get('city') || 'Tokyo';
-  const cacheKey = `suggestions_${city}`;
+  const country = searchParams.get('country') || 'Japan';
+  const cacheKey = `suggestions_${country}_${city}`;
   const cached = getCached(cacheKey);
   if (cached) {
     return NextResponse.json({ suggestions: cached });
@@ -18,10 +19,10 @@ export async function GET(req: NextRequest) {
     const doorkeeperRaw = await fetchDoorkeeperEvents(city);
     const events = doorkeeperRaw.map(mapDoorkeeperEvent);
     const today = new Date().toISOString().slice(0, 10);
-    const todaysEvents = events.filter(e => e.date.startsWith(today));
+    const todaysEvents = events.filter((e: Event) => e.date.startsWith(today));
 
     // Fetch top-rated food places
-    const places = await searchFoodPlaces(city);
+    const places = await searchFoodPlaces(city, country);
     const detailed = await Promise.all(
       places.slice(0, 5).map(async (place: any) => {
         const details = await getPlaceDetails(place.place_id);
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
 
     // Normalize to Suggestion objects
     const suggestions = [
-      ...todaysEvents.map(e => ({
+      ...todaysEvents.map((e: Event) => ({
         id: e.id,
         type: 'event',
         title: e.title,

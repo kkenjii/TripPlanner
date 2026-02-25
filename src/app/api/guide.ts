@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCached, setCached } from '../../lib/services/cacheService';
-import { scrapeRedditTips, scrapeJapanGuideChecklist } from '../../lib/services/guideScraperService';
+import { scrapeRedditTips, scrapeJapanGuideChecklist, TravelTip } from '../../lib/services/guideScraperService';
 
 const guideData: Record<string, { tips: string[]; checklist: string[]; mistakes: string[] }> = {
   Tokyo: {
@@ -91,6 +91,7 @@ const guideData: Record<string, { tips: string[]; checklist: string[]; mistakes:
   },
 };
 
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const city = searchParams.get('city') || 'Tokyo';
   const cacheKey = `guide_${city}`;
@@ -101,10 +102,10 @@ const guideData: Record<string, { tips: string[]; checklist: string[]; mistakes:
   // Scrape tips and checklist, fallback to static
   let tips = await scrapeRedditTips(city);
   let checklist = await scrapeJapanGuideChecklist(city);
-  const static = guideData[city] || guideData['Tokyo'];
-  if (!tips.length) tips = static.tips;
-  if (!checklist.length) checklist = static.checklist;
-  const mistakes = static.mistakes;
+  const staticData = guideData[city] || guideData['Tokyo'];
+  if (!tips.length) tips = staticData.tips.map(text => ({ text, category: 'general' as const, source: 'static' as const, upvotes: 0 }));
+  if (!checklist.length) checklist = staticData.checklist;
+  const mistakes = staticData.mistakes;
   const data = { tips, checklist, mistakes };
   setCached(cacheKey, data, 1000 * 60 * 60); // 1 hour
   return NextResponse.json(data);
