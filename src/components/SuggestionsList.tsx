@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Card from './Card';
+import { useAppContext } from '../context/AppContext';
 
 export type Suggestion = {
   id: string;
@@ -13,25 +14,44 @@ export type Suggestion = {
   reviews?: any[];
 };
 
-export default function SuggestionsList({ city }: { city: string }) {
+export default function SuggestionsList({ city, country }: { city: string; country: string }) {
+  const { getCachedData, setCachedData } = useAppContext();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!city || !country) {
+      setSuggestions([]);
+      setLoading(false);
+      return;
+    }
+
+    const cacheKey = `suggestions_${country}_${city}`;
+    const cachedSuggestions = getCachedData(cacheKey);
+    
+    if (cachedSuggestions) {
+      console.log(`[SuggestionsList] Loading cached suggestions for ${country} - ${city}`);
+      setSuggestions(cachedSuggestions);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
-    fetch(`/api/suggestions?city=${encodeURIComponent(city)}`)
+    fetch(`/api/suggestions?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}`)
       .then(res => res.json())
       .then(data => {
-        setSuggestions(data.suggestions || []);
+        const suggestionData = data.suggestions || [];
+        setCachedData(cacheKey, suggestionData);
+        setSuggestions(suggestionData);
         setLoading(false);
       })
       .catch(() => {
         setError('Failed to load suggestions');
         setLoading(false);
       });
-  }, [city]);
+  }, [city, country, getCachedData, setCachedData]);
 
   if (loading) return <div className="text-center py-8">Loading suggestions...</div>;
   if (error) return <div className="text-center text-red-500 py-8">{error}</div>;

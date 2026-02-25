@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Card from './Card';
 import { getUserLocation, calculateDistance, formatDistance, Coordinates } from '../lib/utils/gpsUtils';
+import { useAppContext } from '../context/AppContext';
 
 interface Review {
   author: string;
@@ -34,6 +35,7 @@ interface TrendingListProps {
 }
 
 export default function TrendingList({ city, country }: TrendingListProps) {
+  const { getCachedData, setCachedData } = useAppContext();
   const FETCH_MAX_PER_CATEGORY = 30;
   const INITIAL_VISIBLE_PER_CATEGORY = 10;
   const [items, setItems] = useState<TrendingItem[]>([]);
@@ -59,6 +61,16 @@ export default function TrendingList({ city, country }: TrendingListProps) {
       return;
     }
 
+    const cacheKey = `trending_${country}_${city}`;
+    const cachedItems = getCachedData(cacheKey);
+    
+    if (cachedItems) {
+      console.log(`[TrendingList] Loading cached trending for ${country} - ${city}`);
+      setItems(cachedItems);
+      setLoading(false);
+      return;
+    }
+
     const fetchTrending = async () => {
       setItems([]);
       setLoading(true);
@@ -67,6 +79,7 @@ export default function TrendingList({ city, country }: TrendingListProps) {
         const response = await fetch(`/api/trending?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&limitPerCategory=${FETCH_MAX_PER_CATEGORY}`);
         if (!response.ok) throw new Error('Failed to fetch trending data');
         const data = await response.json();
+        setCachedData(cacheKey, data);
         setItems(data);
       } catch (err) {
         setError('Failed to load trending items');
@@ -77,7 +90,7 @@ export default function TrendingList({ city, country }: TrendingListProps) {
     };
 
     fetchTrending();
-  }, [city, country]);
+  }, [city, country, getCachedData, setCachedData]);
 
   useEffect(() => {
     setVisiblePerCategoryLimit(INITIAL_VISIBLE_PER_CATEGORY);

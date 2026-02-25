@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Card from './Card';
 import { getUserLocation, calculateDistance, formatDistance, Coordinates } from '../lib/utils/gpsUtils';
+import { useAppContext } from '../context/AppContext';
 
 export type FoodPlace = {
   id: string;
@@ -19,6 +20,7 @@ export type FoodPlace = {
 };
 
 export default function FoodList({ city, country }: { city: string; country: string }) {
+  const { getCachedData, setCachedData } = useAppContext();
   const FETCH_MAX = 50;
   const INITIAL_VISIBLE = 10;
   const [food, setFood] = useState<FoodPlace[]>([]);
@@ -41,6 +43,16 @@ export default function FoodList({ city, country }: { city: string; country: str
       return;
     }
 
+    const cacheKey = `food_${country}_${city}`;
+    const cachedFood = getCachedData(cacheKey);
+    
+    if (cachedFood) {
+      console.log(`[FoodList] Loading cached food for ${country} - ${city}`);
+      setFood(cachedFood);
+      setLoading(false);
+      return;
+    }
+
     setFood([]);
     setLoading(true);
     setError(null);
@@ -49,14 +61,16 @@ export default function FoodList({ city, country }: { city: string; country: str
     fetch(`/api/food?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}`)
       .then(res => res.json())
       .then(data => {
-        setFood(data.food || []);
+        const foodData = data.food || [];
+        setCachedData(cacheKey, foodData);
+        setFood(foodData);
         setLoading(false);
       })
       .catch(() => {
         setError('Failed to load food places');
         setLoading(false);
       });
-  }, [city, country]);
+  }, [city, country, getCachedData, setCachedData]);
 
   // Get user's GPS location on component mount
   useEffect(() => {

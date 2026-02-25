@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getTravelGuide, TravelGuideData } from '../lib/data/travelGuideData';
+import { useAppContext } from '../context/AppContext';
 
 export interface TravelStory {
   id: string;
@@ -14,6 +15,7 @@ export interface TravelStory {
 }
 
 export default function GuideSection({ city, country }: { city: string; country: string }) {
+  const { getCachedData, setCachedData } = useAppContext();
   const [travelGuide, setTravelGuide] = useState<TravelGuideData | null>(null);
   const [stories, setStories] = useState<TravelStory[]>([]);
   const [loading, setLoading] = useState(false);
@@ -24,9 +26,6 @@ export default function GuideSection({ city, country }: { city: string; country:
   const [storageReady, setStorageReady] = useState(false);
   const [successfulResponse, setSuccessfulResponse] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-  
-  // Cache stories by country
-  const storiesCacheRef = useRef<Record<string, TravelStory[]>>({});
 
   // Load travel guide data and stories
   useEffect(() => {
@@ -49,9 +48,10 @@ export default function GuideSection({ city, country }: { city: string; country:
 
     // Check if we have cached stories for this country+city
     const cacheKey = `${country}__${city}`;
-    if (storiesCacheRef.current[cacheKey]) {
+    const cachedStories = getCachedData(cacheKey);
+    if (cachedStories) {
       console.log(`[GuideSection] Loading cached stories for ${country} - ${city}`);
-      setStories(storiesCacheRef.current[cacheKey]);
+      setStories(cachedStories);
       setSuccessfulResponse(true);
       setLoading(false);
     } else {
@@ -96,7 +96,7 @@ export default function GuideSection({ city, country }: { city: string; country:
             // Add new stories to existing ones
             allStories.push(...stories);
             // Update state immediately with accumulated stories
-            storiesCacheRef.current[cacheKey] = allStories;
+            setCachedData(cacheKey, allStories);
             setStories([...allStories]);
           }
         } catch (err) {
