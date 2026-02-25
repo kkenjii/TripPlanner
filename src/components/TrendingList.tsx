@@ -28,6 +28,8 @@ interface TrendingItem {
   googleMapsUrl?: string;
   source?: string;
   trendingScore: number;
+  lat?: number;
+  lng?: number;
   reviews?: Review[];
 }
 
@@ -132,16 +134,27 @@ export default function TrendingList({ city, country }: TrendingListProps) {
     const newDistances: Record<string, string> = {};
     const newDistanceKmById: Record<string, number> = {};
     items.forEach(item => {
-      // Parse coordinates from the map URL
-      const mapUrlMatch = item.googleMapsUrl?.match(/q=([-\d.]+),([-\d.]+)/);
-      if (mapUrlMatch) {
+      // Use lat/lng properties directly if available
+      if (item.lat !== undefined && item.lng !== undefined) {
         const itemCoords: Coordinates = {
-          lat: parseFloat(mapUrlMatch[1]),
-          lng: parseFloat(mapUrlMatch[2]),
+          lat: item.lat,
+          lng: item.lng,
         };
         const km = calculateDistance(userLocation, itemCoords);
         newDistances[item.id] = formatDistance(km);
         newDistanceKmById[item.id] = km;
+      } else {
+        // Fallback: Parse coordinates from the map URL for older cached data
+        const mapUrlMatch = item.googleMapsUrl?.match(/q=([-\d.]+),([-\d.]+)/);
+        if (mapUrlMatch) {
+          const itemCoords: Coordinates = {
+            lat: parseFloat(mapUrlMatch[1]),
+            lng: parseFloat(mapUrlMatch[2]),
+          };
+          const km = calculateDistance(userLocation, itemCoords);
+          newDistances[item.id] = formatDistance(km);
+          newDistanceKmById[item.id] = km;
+        }
       }
     });
     setDistances(newDistances);

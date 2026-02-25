@@ -23,6 +23,8 @@ export interface TrendingItem {
   source?: string;
   trendingScore: number;
   reviews?: Review[];
+  lat?: number;
+  lng?: number;
 }
 
 interface GooglePlace {
@@ -283,6 +285,8 @@ export async function fetchTrendingData(
             let googleMapsUrl = '';
             let address = '';
             let description = '';
+            let placeLat: number | undefined;
+            let placeLng: number | undefined;
 
             if (placeDetails) {
               address = placeDetails.formatted_address || '';
@@ -290,9 +294,13 @@ export async function fetchTrendingData(
               // Use coordinates for more accurate map link (prioritized by availability)
               if (placeDetails.geometry?.location) {
                 const { lat, lng } = placeDetails.geometry.location;
+                placeLat = lat;
+                placeLng = lng;
                 googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
               } else if (place.geometry?.location) {
                 const { lat, lng } = place.geometry.location;
+                placeLat = lat;
+                placeLng = lng;
                 googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
               } else {
                 googleMapsUrl = placeDetails.formatted_url || `https://www.google.com/maps/search/${encodeURIComponent(place.name)}`;
@@ -311,6 +319,8 @@ export async function fetchTrendingData(
               // Fallback: Use coordinates from initial search result, then name
               if (place.geometry?.location) {
                 const { lat, lng } = place.geometry.location;
+                placeLat = lat;
+                placeLng = lng;
                 googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
               } else {
                 googleMapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(place.name)}`;
@@ -357,6 +367,8 @@ export async function fetchTrendingData(
               address,
               googleMapsUrl,
               reviews,
+              lat: placeLat,
+              lng: placeLng,
             });
           }
         }
