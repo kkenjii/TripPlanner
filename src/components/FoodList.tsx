@@ -40,6 +40,12 @@ export default function FoodList({ city, country }: { city: string; country: str
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const itemsPerPage = 10;
 
+  const getPlaceKey = (place: FoodPlace, index?: number): string => {
+    if (place.id) return place.id;
+    if (place.name) return place.name;
+    return index !== undefined ? `idx_${index}` : '';
+  };
+
   useEffect(() => {
     if (!city || !country) {
       setFood([]);
@@ -115,11 +121,14 @@ export default function FoodList({ city, country }: { city: string; country: str
     const newDistanceKmById: Record<string, number> = {};
     food.forEach((place) => {
       if (place.lat === 0 || place.lng === 0) return;
+
+      const placeKey = getPlaceKey(place);
+      if (!placeKey) return;
       
       const itemCoords: Coordinates = { lat: place.lat, lng: place.lng };
       const km = calculateDistance(userLocation, itemCoords);
-      newDistances[place.id] = formatDistance(km);
-      newDistanceKmById[place.id] = km;
+      newDistances[placeKey] = formatDistance(km);
+      newDistanceKmById[placeKey] = km;
     });
     setDistances(newDistances);
     setDistanceKmById(newDistanceKmById);
@@ -131,9 +140,17 @@ export default function FoodList({ city, country }: { city: string; country: str
 
     switch (sortBy) {
       case 'closest':
-        return foodCopy.sort((a, b) => (distanceKmById[a.id] || Infinity) - (distanceKmById[b.id] || Infinity));
+        return foodCopy.sort((a, b) => {
+          const aKey = getPlaceKey(a);
+          const bKey = getPlaceKey(b);
+          return (distanceKmById[aKey] || Infinity) - (distanceKmById[bKey] || Infinity);
+        });
       case 'farthest':
-        return foodCopy.sort((a, b) => (distanceKmById[b.id] || 0) - (distanceKmById[a.id] || 0));
+        return foodCopy.sort((a, b) => {
+          const aKey = getPlaceKey(a);
+          const bKey = getPlaceKey(b);
+          return (distanceKmById[bKey] || 0) - (distanceKmById[aKey] || 0);
+        });
       case 'rating':
         return foodCopy.sort((a, b) => b.rating - a.rating);
       case 'price-low':
@@ -311,8 +328,10 @@ export default function FoodList({ city, country }: { city: string; country: str
       )}
 
       {/* Food items */}
-      {paginatedFood.map((place, idx) => (
-        <Card key={idx}>
+      {paginatedFood.map((place, idx) => {
+        const placeKey = getPlaceKey(place, idx);
+        return (
+        <Card key={placeKey}>
           <div className="flex justify-between items-start gap-4">
             <div className="flex-1">
               <div className="font-bold text-lg mb-2 app-text-primary">{place.name}</div>
@@ -340,9 +359,9 @@ export default function FoodList({ city, country }: { city: string; country: str
                     </span>
                   );
                 })()}
-                {distances[place.id] !== undefined && userLocation && (
+                {distanceKmById[placeKey] !== undefined && userLocation && (
                   <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-semibold flex items-center gap-1">
-                    🧭 {distances[place.id]}
+                    🧭 {distanceKmById[placeKey].toFixed(2)}km
                   </span>
                 )}
               </div>
@@ -413,7 +432,8 @@ export default function FoodList({ city, country }: { city: string; country: str
             </div>
           )}
         </Card>
-      ))}
+      );
+      })}
 
       {/* Pagination bottom */}
       {totalPages > 1 && (
