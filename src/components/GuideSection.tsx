@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getTravelGuide, TravelGuideData } from '../lib/data/travelGuideData';
 import { useAppContext } from '../context/AppContext';
+import LoadingBar from './LoadingBar';
 
 export interface TravelStory {
   id: string;
@@ -26,6 +27,7 @@ export default function GuideSection({ city, country }: { city: string; country:
   const [storageReady, setStorageReady] = useState(false);
   const [successfulResponse, setSuccessfulResponse] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const [fetchProgress, setFetchProgress] = useState(0);
 
   // Load travel guide data and stories
   useEffect(() => {
@@ -71,6 +73,7 @@ export default function GuideSection({ city, country }: { city: string; country:
       const subreddits = subredditsByCountry[country] || ['travel', 'solotravel', 'travelhacks'];
       const allStories: TravelStory[] = [];
       let delayMs = 1000; // Start with 1 second delay
+      let currentProgress = 0;
 
       for (const subreddit of subreddits) {
         // Add delay before each subreddit fetch to avoid rate limiting
@@ -98,9 +101,14 @@ export default function GuideSection({ city, country }: { city: string; country:
             // Update state immediately with accumulated stories
             setCachedData(cacheKey, allStories);
             setStories([...allStories]);
+            // Update progress
+            currentProgress++;
+            setFetchProgress(currentProgress);
           }
         } catch (err) {
           console.error(`[GuideSection] Error fetching from ${subreddit}:`, err);
+          currentProgress++;
+          setFetchProgress(currentProgress);
         }
       }
 
@@ -187,12 +195,24 @@ export default function GuideSection({ city, country }: { city: string; country:
           </div>
 
           {stories.length === 0 ? (
-            <div className="app-inner rounded-lg p-4 text-center">
-              <p className={`app-text-muted text-sm ${successfulResponse || isFetching ? 'loading-jiggly' : ''}`}>
-                {successfulResponse || isFetching
-                  ? "Loading Traveler Stories!..." 
-                  : "No traveler stories found this week. Check back soon!"}
-              </p>
+            <div className="app-inner rounded-lg p-4">
+              {successfulResponse || isFetching ? (
+                <>
+                  <LoadingBar 
+                    current={fetchProgress} 
+                    total={5} 
+                    label="Loading from subreddits" 
+                    isVisible={true}
+                  />
+                  <p className={`app-text-muted text-sm text-center mt-3 ${isFetching ? 'loading-jiggly' : ''}`}>
+                    Gathering traveler stories...
+                  </p>
+                </>
+              ) : (
+                <p className="app-text-muted text-sm text-center">
+                  No traveler stories found this week. Check back soon!
+                </p>
+              )}
             </div>
           ) : (
             <>

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Card from './Card';
 import { getUserLocation, calculateDistance, formatDistance, Coordinates } from '../lib/utils/gpsUtils';
 import { useAppContext } from '../context/AppContext';
+import LoadingBar from './LoadingBar';
+import SkeletonCard from './SkeletonCard';
 
 interface Review {
   author: string;
@@ -366,8 +368,13 @@ export default function TrendingList({ city, country }: TrendingListProps) {
       </div>
 
       {loading && (
-        <div className="text-center py-12">
-          <p className="text-gray-600 animate-pulse">Loading trending items...</p>
+        <div className="mt-6">
+          <LoadingBar current={1} total={3} label="Loading trending items" isVisible={true} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
         </div>
       )}
 

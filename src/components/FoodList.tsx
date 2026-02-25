@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Card from './Card';
 import { getUserLocation, calculateDistance, formatDistance, Coordinates } from '../lib/utils/gpsUtils';
 import { useAppContext } from '../context/AppContext';
+import LoadingBar from './LoadingBar';
+import SkeletonCard from './SkeletonCard';
 
 export type FoodPlace = {
   id: string;
@@ -141,7 +143,18 @@ export default function FoodList({ city, country }: { city: string; country: str
     return styles[level] || { label: 'Price Unknown', bgColor: 'bg-gray-100', textColor: 'text-gray-800' };
   };
 
-  if (loading) return <div className="text-center py-8">Loading food places...</div>;
+  if (loading) {
+    return (
+      <div className="p-6">
+        <LoadingBar current={1} total={3} label="Loading food places" isVisible={true} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (error) return <div className="text-center text-red-500 py-8">{error}</div>;
   if (!food.length) return <div className="text-center py-8">No food places found.</div>;
 
